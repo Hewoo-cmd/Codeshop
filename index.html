@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Hub & Meetups</title>
+    <title>Code Meetup Shop</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Product+Sans:wght@400;700&display=swap');
 
@@ -94,7 +94,6 @@
             flex: 1;
         }
 
-        /* Products Grid Grid System */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -153,6 +152,7 @@
             color: var(--success-color);
         }
 
+        /* Master Button Class */
         .btn {
             width: 100%;
             padding: 0.7rem;
@@ -188,7 +188,7 @@
             transform: scale(0.98);
         }
 
-        /* Full Screen Modals / Overlay Layers */
+        /* Overlays */
         .overlay {
             display: none;
             position: fixed;
@@ -210,11 +210,11 @@
             border: 1px solid var(--card-border);
             border-radius: 20px;
             width: 100%;
-            max-width: 600px;
-            padding: 2rem;
+            max-width: 950px; /* Widened to perfectly support side-by-side split panels */
+            padding: 2.5rem;
             box-shadow: 0 20px 50px rgba(0,0,0,0.6);
             position: relative;
-            max-height: 90vh;
+            max-height: 95vh;
             overflow-y: auto;
         }
 
@@ -227,83 +227,87 @@
             color: var(--text-muted);
             font-size: 1.6rem;
             cursor: pointer;
+            transition: color 0.2s;
+            z-index: 10;
         }
 
         .close-btn:hover {
             color: #fff;
         }
 
-        /* Demo GUI Testing System Layout components */
-        .demo-window {
+        /* 🚀 SIDE-BY-SIDE SIDEBAR SPLIT LAYOUT CONTAINER */
+        .modal-split-layout {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr; /* Preview screen gets a bit more space than info side */
+            gap: 2rem;
+            align-items: start;
+        }
+
+        /* Automatically stacks top-to-bottom on smaller mobile viewports */
+        @media (max-width: 768px) {
+            .modal-split-layout {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        /* Left Side: Large Template Preview Area */
+        .sandbox-panel {
             background: #06070a;
             border: 1px solid var(--card-border);
-            border-radius: 12px;
-            margin: 1.5rem 0;
+            border-radius: 14px;
             overflow: hidden;
+            width: 100%;
+        }
+
+        .sandbox-iframe {
+            width: 100%;
+            height: 500px; 
+            background: #111216;
+            border: none;
+            display: block;
+        }
+
+        /* Right Side: Info Panel & Button stack */
+        .info-panel {
             display: flex;
             flex-direction: column;
+            height: 100%;
+            justify-content: flex-start;
         }
 
-        .demo-top-bar {
-            background: rgba(255,255,255,0.02);
-            padding: 0.8rem 1rem;
-            border-bottom: 1px solid var(--card-border);
+        .info-panel h2 {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 0.8rem;
+        }
+
+        .info-panel p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+
+        .modal-action-buttons {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .demo-title {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--accent-color);
-            font-weight: bold;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-top: auto; /* Pushes button stack to the bottom of the info block */
         }
 
         .run-template-btn {
-            background: transparent;
-            border: 1px solid var(--success-color);
-            color: var(--success-color);
-            padding: 4px 12px;
-            font-size: 0.8rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid var(--card-border);
         }
 
         .run-template-btn:hover {
-            background: var(--success-color);
-            color: #000;
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--text-muted);
         }
 
-        .demo-display-area {
-            min-height: 180px;
-            background: #020204;
-            padding: 1rem;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        .demo-console-log {
-            width: 100%;
-            background: #000;
-            border-top: 1px solid var(--card-border);
-            padding: 0.8rem;
-            font-family: monospace;
-            font-size: 0.85rem;
-            color: #4ade80;
-            min-height: 80px;
-            max-height: 120px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-
-        /* Checkout Forms UI */
+        /* Checkout Form Formatting */
         .cart-summary-list {
             list-style: none;
             margin-bottom: 1.5rem;
@@ -385,25 +389,32 @@
         <div class="products-grid" id="products-target"></div>
     </main>
 
+    <!-- SIDE-BY-SIDE MODAL TESTER INTERACTIVE INTERFACE -->
     <div class="overlay" id="test-modal">
-        <div class="modal-box" style="max-width: 650px;">
+        <div class="modal-box">
             <button class="close-btn" onclick="toggleOverlay('test-modal', false)">&times;</button>
-            <h2 id="modal-product-title">Template Tester</h2>
-            <p id="modal-product-desc" style="color: var(--text-muted); margin-top: 0.3rem; font-size: 0.95rem;"></p>
             
-            <div class="demo-window">
-                <div class="demo-top-bar">
-                    <span class="demo-title" id="modal-demo-title">Sandbox Monitor</span>
-                    <button class="run-template-btn" id="modal-run-btn">Run Code Template</button>
+            <div class="modal-split-layout">
+                <!-- Column 1 (Left Side): Expanded Screen Display -->
+                <div class="sandbox-panel">
+                    <iframe class="sandbox-iframe" id="modal-sandbox-frame" sandbox="allow-scripts allow-modals"></iframe>
                 </div>
-                <div class="demo-display-area" id="modal-display-canvas"></div>
-                <div class="demo-console-log" id="modal-console-log">&gt; Engine ready. Tap "Run Code Template" to evaluate initialization loops.</div>
+                
+                <!-- Column 2 (Right Side): Product Content Stack -->
+                <div class="info-panel">
+                    <h2 id="modal-product-title">Template Tester</h2>
+                    <p id="modal-product-desc"></p>
+                    
+                    <div class="modal-action-buttons">
+                        <button class="btn run-template-btn" id="modal-run-btn">Run Code Template</button>
+                        <button class="btn add-btn" id="modal-add-to-cart-direct">Add Template to Cart</button>
+                    </div>
+                </div>
             </div>
-            
-            <button class="btn add-btn" id="modal-add-to-cart-direct">Add Template to Cart</button>
         </div>
     </div>
 
+    <!-- CHECKOUT FORM OVERLAY -->
     <div class="overlay" id="checkout-modal">
         <div class="modal-box">
             <button class="close-btn" onclick="toggleOverlay('checkout-modal', false)">&times;</button>
@@ -445,50 +456,36 @@
         // ==========================================
         //  EASY TO ADD/CUSTOMIZE PRODUCTS ARRAY
         // ==========================================
-        // Just add or modify items inside this array!
         const productDatabase = [
             {
                 id: "ui-glass",
                 title: "Glassmorphism UI Engine",
                 desc: "A ready-to-use aesthetic template system utilizing background-blurs, linear tracking gradients, and smooth glowing card matrices.",
                 price: 15.00,
-                previewHTML: `<div style="padding: 1.5rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(6px); border-radius: 12px; font-weight: bold; color: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">Glassmorphism Active Card</div>`,
-                onRun: function(consoleLog, canvasEl) {
-                    consoleLog.innerText = `> Loading style sheets...\n> Compiling standard CSS filter definitions.\n> [Success] Glass backdrop-filter applied at 6px calculation matrices smoothly.`;
-                }
+                fileLocation: "templete1.html" 
             },
             {
-                id: "server-logs",
-                title: "Administrative Log Tracker",
-                desc: "An isolated background script framework engineered to process incoming tracking nodes, active logs, and custom status indicators.",
+                id: "glootok-feed",
+                title: "GlooTok Video Component",
+                desc: "Infinite scroll and localized content feed element configurations designed to manage dynamic interface grids independently.",
                 price: 25.00,
-                previewHTML: `<div style="font-family: monospace; color: #a5b4fc; font-size: 14px;">[Port 8080] Awaiting Packets...</div>`,
-                onRun: function(consoleLog, canvasEl) {
-                    canvasEl.innerHTML = `<div style="font-family: monospace; color: #4ade80; font-size: 14px; animation: flash 1s infinite;">[Port 8080] ACTIVE HANDSHAKE CONNECTED</div>`;
-                    consoleLog.innerText = `> Launching network handshake test loops...\n> Packet tracking index synchronized.\n> Security logs generated under active local schema directories safely.`;
-                }
+                fileLocation: "templete2.html"
             },
             {
-                id: "particle-canvas",
-                title: "Interactive Vector Canvas",
-                desc: "A pure responsive HTML5 canvas configuration designed to dynamically track mouse paths or render automated interactive shapes.",
+                id: "garden-canvas",
+                title: "Procedural Canvas Element",
+                desc: "A custom interactive UI node mapped directly within standard HTML canvas modules to manage real-time structural items cleanly.",
                 price: 30.00,
-                previewHTML: `<div id="live-ball" style="width: 40px; height: 40px; background: #4f46e5; border-radius: 50%; transform: scale(0.2); transition: all 0.5s ease;"></div>`,
-                onRun: function(consoleLog, canvasEl) {
-                    const ball = document.getElementById('live-ball');
-                    if(ball) ball.style.transform = "scale(1.5)";
-                    consoleLog.innerText = `> Canvas2D context initialized.\n> Vector point transformation sequence initiated.\n> Shape instance generated dynamically inside target matrix views.`;
-                }
+                fileLocation: "templete3.html"
             }
-            // 💡 TO ADD A NEW PRODUCT: Copy/Paste one of the blocks above right here, change the text, and add a comma!
         ];
 
         let cart = [];
 
-        // Dynamic Card Grid Rendering Engine
+        // Build HTML Storefront Cards
         function buildShopCards() {
             const container = document.getElementById('products-target');
-            container.innerHTML = productDatabase.map((prod, index) => `
+            container.innerHTML = productDatabase.map(prod => `
                 <div class="product-card">
                     <div>
                         <h3 class="product-title">${prod.title}</h3>
@@ -506,44 +503,37 @@
             `).join('');
         }
 
-        // GUI TESTER ENGINE CONTROLLER
+        // GUI TESTER CONTROL ENGINE
         function openTesterGui(productId) {
             const product = productDatabase.find(p => p.id === productId);
             if (!product) return;
 
-            // Bind values directly into GUI Modal
             document.getElementById('modal-product-title').innerText = product.title;
             document.getElementById('modal-product-desc').innerText = product.desc;
-            document.getElementById('modal-demo-title').innerText = `${product.title} Runtime Sandbox`;
             
-            // Mount raw starting HTML previews
-            const canvas = document.getElementById('modal-display-canvas');
-            canvas.innerHTML = product.previewHTML;
+            const iframe = document.getElementById('modal-sandbox-frame');
             
-            // Reset system log strings
-            const consoleLog = document.getElementById('modal-console-log');
-            consoleLog.innerText = `> Sandbox environment clean.\n> Click "Run Code Template" to inspect automated script executions.`;
+            function runTemplateCode() {
+                iframe.src = product.fileLocation;
+            }
 
-            // Setup isolated click hook handles for execution functions
-            document.getElementById('modal-run-btn').onclick = function() {
-                product.onRun(consoleLog, canvas);
-            };
+            document.getElementById('modal-run-btn').onclick = runTemplateCode;
 
-            // Setup shortcut addition hooks from within the tester panel views
             document.getElementById('modal-add-to-cart-direct').onclick = function() {
                 addToCart(product.title, product.price);
                 toggleOverlay('test-modal', false);
             };
 
             toggleOverlay('test-modal', true);
+            runTemplateCode();
         }
 
-        // Global Overlay Actions
+        // Overlay Controllers
         function toggleOverlay(id, show) {
             document.getElementById(id).style.display = show ? 'flex' : 'none';
         }
 
-        // Cart Utility Processing Logic
+        // Cart Controllers
         function addToCart(title, price) {
             cart.push({ title, price });
             updateCartUI();
@@ -577,7 +567,6 @@
             }
         }
 
-        // Intercept standard handles to wipe variables safely on submission loops
         document.getElementById('meetup-form').addEventListener('submit', function() {
             setTimeout(() => {
                 cart = [];
@@ -586,7 +575,6 @@
             }, 100);
         });
 
-        // Initialize Runtime Components
         buildShopCards();
         updateCartUI();
     </script>
