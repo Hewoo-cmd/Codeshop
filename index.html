@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Hub & Meetups</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Product+Sans:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #0b0c10;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-color: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --accent-color: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.4);
+            --success-color: #10b981;
+            --glass-blur: blur(12px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Product Sans', 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        header {
+            width: 100%;
+            max-width: 1200px;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cart-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            color: var(--text-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cart-btn:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        .cart-count {
+            background: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 8px;
+            font-size: 0.8rem;
+        }
+
+        main {
+            width: 100%;
+            max-width: 1200px;
+            padding: 1rem;
+            flex: 1;
+        }
+
+        /* Products Grid Grid System */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .product-title {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .product-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .product-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-top: auto;
+        }
+
+        .product-price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.4rem;
+        }
+
+        .product-price {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--success-color);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.7rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            border: none;
+            text-align: center;
+        }
+
+        .test-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid var(--card-border);
+        }
+
+        .test-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--text-muted);
+        }
+
+        .add-btn {
+            background: var(--accent-color);
+            color: #fff;
+        }
+
+        .add-btn:hover {
+            background: #4338ca;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Full Screen Modals / Overlay Layers */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-box {
+            background: rgba(15, 15, 25, 0.98);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.2rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.6rem;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #fff;
+        }
+
+        /* Demo GUI Testing System Layout components */
+        .demo-window {
+            background: #06070a;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .demo-top-bar {
+            background: rgba(255,255,255,0.02);
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .demo-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .run-template-btn {
+            background: transparent;
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .run-template-btn:hover {
+            background: var(--success-color);
+            color: #000;
+        }
+
+        .demo-display-area {
+            min-height: 180px;
+            background: #020204;
+            padding: 1rem;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .demo-console-log {
+            width: 100%;
+            background: #000;
+            border-top: 1px solid var(--card-border);
+            padding: 0.8rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #4ade80;
+            min-height: 80px;
+            max-height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        /* Checkout Forms UI */
+        .cart-summary-list {
+            list-style: none;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1rem;
+        }
+
+        .cart-summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .cart-total-display {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--success-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.8rem;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: var(--accent-color);
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-color), #6366f1);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .empty-cart-text {
+            color: var(--text-muted);
+            text-align: center;
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Code Meetup Shop</h1>
+        <button class="cart-btn" onclick="toggleOverlay('checkout-modal', true)">
+            Cart <span class="cart-count" id="cart-count">0</span>
+        </button>
+    </header>
+
+    <main>
+        <div class="products-grid" id="products-target"></div>
+    </main>
+
+    <div class="overlay" id="test-modal">
+        <div class="modal-box" style="max-width: 650px;">
+            <button class="close-btn" onclick="toggleOverlay('test-modal', false)">&times;</button>
+            <h2 id="modal-product-title">Template Tester</h2>
+            <p id="modal-product-desc" style="color: var(--text-muted); margin-top: 0.3rem; font-size: 0.95rem;"></p>
+            
+            <div class="demo-window">
+                <div class="demo-top-bar">
+                    <span class="demo-title" id="modal-demo-title">Sandbox Monitor</span>
+                    <button class="run-template-btn" id="modal-run-btn">Run Code Template</button>
+                </div>
+                <div class="demo-display-area" id="modal-display-canvas"></div>
+                <div class="demo-console-log" id="modal-console-log">&gt; Engine ready. Tap "Run Code Template" to evaluate initialization loops.</div>
+            </div>
+            
+            <button class="btn add-btn" id="modal-add-to-cart-direct">Add Template to Cart</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="checkout-modal">
+        <div class="modal-box">
+            <button class="close-btn" onclick="toggleOverlay('checkout-modal', false)">&times;</button>
+            <h2>Your Order Details</h2>
+            
+            <div id="cart-contents-wrapper">
+                <ul class="cart-summary-list" id="cart-summary-list"></ul>
+                <div class="cart-total-display">
+                    <span>Total (Fake Balance):</span>
+                    <span id="cart-total-price">$0.00</span>
+                </div>
+            </div>
+
+            <form id="meetup-form" action="https://formspree.io/f/meewvbny" method="POST">
+                <input type="hidden" name="Ordered_Items" id="hidden-cart-items">
+                <input type="hidden" name="Total_Cost" id="hidden-cart-total">
+
+                <div class="form-group">
+                    <label for="buyer-name">Your Name</label>
+                    <input type="text" id="buyer-name" name="Buyer_Name" placeholder="Alex Smith" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="buyer-email">Your Email Address</label>
+                    <input type="email" id="buyer-email" name="Buyer_Email" placeholder="alex@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="meetup-details">Proposed Meetup Location & Time</label>
+                    <textarea id="meetup-details" name="Meetup_Preferences" rows="3" placeholder="e.g., Library computer lab, tomorrow during lunch session" required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Request Meetup & Code</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        //  EASY TO ADD/CUSTOMIZE PRODUCTS ARRAY
+        // ==========================================
+        // Just add or modify items inside this array!
+        const productDatabase = [
+            {
+                id: "ui-glass",
+                title: "Glassmorphism UI Engine",
+                desc: "A ready-to-use aesthetic template system utilizing background-blurs, linear tracking gradients, and smooth glowing card matrices.",
+                price: 15.00,
+                previewHTML: `<div style="padding: 1.5rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(6px); border-radius: 12px; font-weight: bold; color: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">Glassmorphism Active Card</div>`,
+                onRun: function(consoleLog, canvasEl) {
+                    consoleLog.innerText = `> Loading style sheets...\n> Compiling standard CSS filter definitions.\n> [Success] Glass backdrop-filter applied at 6px calculation matrices smoothly.`;
+                }
+            },
+            {
+                id: "server-logs",
+                title: "Administrative Log Tracker",
+                desc: "An isolated background script framework engineered to process incoming tracking nodes, active logs, and custom status indicators.",
+                price: 25.00,
+                previewHTML: `<div style="font-family: monospace; color: #a5b4fc; font-size: 14px;">[Port 8080] Awaiting Packets...</div>`,
+                onRun: function(consoleLog, canvasEl) {
+                    canvasEl.innerHTML = `<div style="font-family: monospace; color: #4ade80; font-size: 14px; animation: flash 1s infinite;">[Port 8080] ACTIVE HANDSHAKE CONNECTED</div>`;
+                    consoleLog.innerText = `> Launching network handshake test loops...\n> Packet tracking index synchronized.\n> Security logs generated under active local schema directories safely.`;
+                }
+            },
+            {
+                id: "particle-canvas",
+                title: "Interactive Vector Canvas",
+                desc: "A pure responsive HTML5 canvas configuration designed to dynamically track mouse paths or render automated interactive shapes.",
+                price: 30.00,
+                previewHTML: `<div id="live-ball" style="width: 40px; height: 40px; background: #4f46e5; border-radius: 50%; transform: scale(0.2); transition: all 0.5s ease;"></div>`,
+                onRun: function(consoleLog, canvasEl) {
+                    const ball = document.getElementById('live-ball');
+                    if(ball) ball.style.transform = "scale(1.5)";
+                    consoleLog.innerText = `> Canvas2D context initialized.\n> Vector point transformation sequence initiated.\n> Shape instance generated dynamically inside target matrix views.`;
+                }
+            }
+            // 💡 TO ADD A NEW PRODUCT: Copy/Paste one of the blocks above right here, change the text, and add a comma!
+        ];
+
+        let cart = [];
+
+        // Dynamic Card Grid Rendering Engine
+        function buildShopCards() {
+            const container = document.getElementById('products-target');
+            container.innerHTML = productDatabase.map((prod, index) => `
+                <div class="product-card">
+                    <div>
+                        <h3 class="product-title">${prod.title}</h3>
+                        <p class="product-desc">${prod.desc}</p>
+                    </div>
+                    <div class="product-actions">
+                        <div class="product-price-row">
+                            <span class="text-muted">Meetup Pack</span>
+                            <span class="product-price">$${prod.price.toFixed(2)}</span>
+                        </div>
+                        <button class="btn test-btn" onclick="openTesterGui('${prod.id}')">Test Template</button>
+                        <button class="btn add-btn" onclick="addToCart('${prod.title}', ${prod.price})">Add to Cart</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // GUI TESTER ENGINE CONTROLLER
+        function openTesterGui(productId) {
+            const product = productDatabase.find(p => p.id === productId);
+            if (!product) return;
+
+            // Bind values directly into GUI Modal
+            document.getElementById('modal-product-title').innerText = product.title;
+            document.getElementById('modal-product-desc').innerText = product.desc;
+            document.getElementById('modal-demo-title').innerText = `${product.title} Runtime Sandbox`;
+            
+            // Mount raw starting HTML previews
+            const canvas = document.getElementById('modal-display-canvas');
+            canvas.innerHTML = product.previewHTML;
+            
+            // Reset system log strings
+            const consoleLog = document.getElementById('modal-console-log');
+            consoleLog.innerText = `> Sandbox environment clean.\n> Click "Run Code Template" to inspect automated script executions.`;
+
+            // Setup isolated click hook handles for execution functions
+            document.getElementById('modal-run-btn').onclick = function() {
+                product.onRun(consoleLog, canvas);
+            };
+
+            // Setup shortcut addition hooks from within the tester panel views
+            document.getElementById('modal-add-to-cart-direct').onclick = function() {
+                addToCart(product.title, product.price);
+                toggleOverlay('test-modal', false);
+            };
+
+            toggleOverlay('test-modal', true);
+        }
+
+        // Global Overlay Actions
+        function toggleOverlay(id, show) {
+            document.getElementById(id).style.display = show ? 'flex' : 'none';
+        }
+
+        // Cart Utility Processing Logic
+        function addToCart(title, price) {
+            cart.push({ title, price });
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            document.getElementById('cart-count').innerText = cart.length;
+            const listElement = document.getElementById('cart-summary-list');
+            const totalElement = document.getElementById('cart-total-price');
+            const formWrapper = document.getElementById('meetup-form');
+            
+            if (cart.length === 0) {
+                listElement.innerHTML = `<p class="empty-cart-text">Your cart is empty. Add items to request a meetup!</p>`;
+                totalElement.innerText = "$0.00";
+                formWrapper.style.display = "none";
+            } else {
+                formWrapper.style.display = "block";
+                listElement.innerHTML = cart.map(item => `
+                    <li class="cart-summary-item">
+                        <span>${item.title}</span>
+                        <span>$${item.price.toFixed(2)}</span>
+                    </li>
+                `).join('');
+                
+                const total = cart.reduce((sum, item) => sum + item.price, 0);
+                const totalText = `$${total.toFixed(2)}`;
+                totalElement.innerText = totalText;
+
+                document.getElementById('hidden-cart-items').value = cart.map(item => item.title).join(', ');
+                document.getElementById('hidden-cart-total').value = totalText;
+            }
+        }
+
+        // Intercept standard handles to wipe variables safely on submission loops
+        document.getElementById('meetup-form').addEventListener('submit', function() {
+            setTimeout(() => {
+                cart = [];
+                updateCartUI();
+                toggleOverlay('checkout-modal', false);
+            }, 100);
+        });
+
+        // Initialize Runtime Components
+        buildShopCards();
+        updateCartUI();
+    </script>
+</body>
+</html>
