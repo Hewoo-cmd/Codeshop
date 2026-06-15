@@ -1,1 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinetic Split Loader</title>
+    <style>
+        :root {
+            --bg-color: #0d0e12;
+            --panel-color: #07080a;
+            --text-color: #f3f4f6;
+            --accent-color: #ff3e3e; /* Sharp, aggressive accent color */
+            --border-color: rgba(255, 255, 255, 0.05);
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- BACKGROUND CONTENT PANEL (Revealed at end) --- */
+        .main-content {
+            position: absolute;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .action-btn {
+            background: transparent;
+            color: var(--text-color);
+            border: 2px solid var(--text-color);
+            padding: 20px 50px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s ease, border-color 0.3s ease, transform 0.1s ease;
+        }
+
+        .action-btn:hover {
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* --- SPLIT LOADING OVERLAY --- */
+        .split-gate {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            pointer-events: none;
+        }
+
+        .gate-half {
+            height: 50%;
+            width: 100%;
+            background-color: var(--panel-color);
+            display: flex;
+            position: relative;
+            transition: transform 1.2s cubic-bezier(0.85, 0, 0.15, 1);
+            pointer-events: auto;
+        }
+
+        .gate-top {
+            align-items: flex-end;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .gate-bottom {
+            align-items: flex-start;
+        }
+
+        /* Center Grid Layout for Loading Elements */
+        .loader-layout {
+            position: absolute;
+            left: 10%;
+            width: 80%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 0;
+            font-family: monospace;
+            transition: opacity 0.4s ease;
+        }
+
+        .gate-top .loader-layout {
+            bottom: 0;
+        }
+
+        .gate-bottom .loader-layout {
+            top: 0;
+        }
+
+        /* Kinetic UI design elements */
+        .brand-label {
+            font-size: 0.85rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .metric-display {
+            font-size: 3.5rem;
+            font-weight: 300;
+            letter-spacing: -0.05em;
+            line-height: 1;
+        }
+
+        .gate-top .metric-display {
+            transform: translateY(18px); /* Visually locks numbers together over the split line */
+        }
+        .gate-bottom .metric-display {
+            transform: translateY(-18px);
+            color: var(--accent-color);
+        }
+
+        .status-msg {
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Dynamic Progress Line sitting right on the split edge */
+        .edge-bar {
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            height: 2px;
+            width: 0%;
+            background-color: var(--accent-color);
+            transition: width 0.1s linear;
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        /* --- ACTIVE TRIGGER STATES --- */
+        body.is-loaded .gate-top {
+            transform: translateY(-100%);
+        }
+
+        body.is-loaded .gate-bottom {
+            transform: translateY(100%);
+        }
+
+        body.is-loaded .loader-layout {
+            opacity: 0;
+        }
+
+        body.is-loaded .main-content {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Target Content Revealed at 100% -->
+    <div class="main-content">
+        <button class="action-btn" onclick="console.log('Action Triggered')">Fully Loaded</button>
+    </div>
+
+    <!-- The Loading Screen Curtain -->
+    <div class="split-gate">
+        <!-- Top Half Panel -->
+        <div class="gate-half gate-top">
+            <div class="loader-layout">
+                <span class="brand-label">INDEX // 01</span>
+                <div class="metric-display" id="countTop">00</div>
+            </div>
+            <div class="edge-bar" id="progressBar"></div>
+        </div>
+        
+        <!-- Bottom Half Panel -->
+        <div class="gate-half gate-bottom">
+            <div class="loader-layout">
+                <div class="metric-display" id="countBottom">00</div>
+                <span class="status-msg" id="statusField">Syncing System</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const countTop = document.getElementById('countTop');
+        const countBottom = document.getElementById('countBottom');
+        const progressBar = document.getElementById('progressBar');
+        const statusField = document.getElementById('statusField');
+
+        let progress = 0;
+
+        const subtleLogs = {
+            25: "Loading Kernal",
+            50: "Compiling Shaders",
+            75: "Spawning Assets"
+        };
+
+        function runner() {
+            // Irregular progress patterns feel intentional and human-engineered
+            let steps = Math.floor(Math.random() * 6) + 1;
+            progress += steps;
+
+            if (progress >= 100) {
+                progress = 100;
+                
+                // Finalize display properties
+                countTop.textContent = "100";
+                countBottom.textContent = "100";
+                progressBar.style.width = "100%";
+                statusField.textContent = "Ready";
+
+                // Execute curtain split transition after a satisfying completion beat
+                setTimeout(() => {
+                    document.body.classList.add('is-loaded');
+                }, 500);
+            } else {
+                const formattedNum = progress.toString().padStart(2, '0');
+                countTop.textContent = formattedNum;
+                countBottom.textContent = formattedNum;
+                progressBar.style.width = `${progress}%`;
+
+                // Cycle contextual text logs based on percentage ranges
+                Object.keys(subtleLogs).forEach(mark => {
+                    if (progress >= mark) {
+                        statusField.textContent = subtleLogs[mark];
+                    }
+                });
+
+                // Frame-rate variability pacing
+                let dynamicDelay = Math.floor(Math.random() * 80) + 15;
+                setTimeout(runner, dynamicDelay);
+            }
+        }
+
+        // Trigger safe initial window delay
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runner, 300);
+        });
+    </script>
+</body>
+</html>
